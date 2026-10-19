@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Ingresos & Finanzas - Bot WhatsApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-hover: #047857;
+      --primary-light: #ecfdf5;
+      --accent: #10b981;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Login Screen */
+    #login-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;
+    }
+    .login-box {
+      background: var(--card-bg); width: 100%; max-width: 400px; padding: 35px 30px; border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2); text-align: center;
+    }
+    .login-box .icon { font-size: 48px; margin-bottom: 15px; }
+    .login-box h2 { font-size: 22px; color: var(--dark); margin-bottom: 8px; font-weight: 700; }
+    .login-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; }
+    .pin-input {
+      width: 100%; padding: 14px; font-size: 22px; letter-spacing: 8px; text-align: center;
+      border: 2px solid var(--border); border-radius: 12px; margin-bottom: 18px; outline: none; transition: all 0.2s;
+    }
+    .pin-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+    .btn-login {
+      width: 100%; padding: 14px; background: var(--primary); color: white; border: none;
+      border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-login:hover { background: var(--primary-hover); }
+    .login-error { color: var(--danger); font-size: 13px; margin-top: 12px; display: none; font-weight: 500; }
+
+    /* Top Navbar */
+    header {
+      background: white; border-bottom: 1px solid var(--border); padding: 14px 24px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-left h1 { font-size: 20px; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px;
+      background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 600;
+    }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.9); } }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: white; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+
+    /* Main Container */
+    main { max-width: 1300px; width: 100%; margin: 0 auto; padding: 25px 20px; flex: 1; }
+
+    /* KPI Cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-bottom: 25px; }
+    .kpi-card {
+      background: var(--card-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border);
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--primary);
+    }
+    .kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .kpi-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-icon { font-size: 20px; }
+    .kpi-value { font-size: 28px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    /* Charts Section */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 25px; }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: var(--card-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .chart-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: var(--dark); }
+    .chart-container { position: relative; height: 260px; width: 100%; }
+
+    /* Filter Bar */
+    .filter-card {
+      background: var(--card-bg); padding: 16px 20px; border-radius: var(--radius); border: 1px solid var(--border);
+      box-shadow: var(--shadow); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between;
+    }
+    .search-box { flex: 1; min-width: 250px; position: relative; }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none;
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .filter-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .select-filter {
+      padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: white; color: var(--text); outline: none;
+    }
+
+    /* Sales Table */
+    .table-card {
+      background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .table-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .table-header h3 { font-size: 16px; font-weight: 700; color: var(--dark); }
+    .table-wrapper { overflow-x: auto; max-height: 600px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th {
+      background: #f8fafc; padding: 12px 16px; font-size: 12px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+    }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background-color: #f8fafc; }
+    .amount-cell { font-weight: 800; color: #047857; font-size: 15px; }
+    .phone-link {
+      color: #0284c7; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .phone-link:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-product { background: #e0e7ff; color: #4338ca; }
+    .badge-upsell { background: #fef3c7; color: #b45309; }
+    .btn-copy {
+      background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px 4px; border-radius: 4px;
+    }
+    .btn-copy:hover { color: var(--primary); background: #e2e8f0; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px;
+    }
+    .modal {
+      background: white; border-radius: 16px; padding: 25px; width: 100%; max-width: 450px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: var(--dark); }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .form-input {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed; bottom: 25px; right: 25px; background: #0f172a; color: white; padding: 12px 20px;
+      border-radius: 10px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+      display: none; z-index: 10001; animation: slideUp 0.3s;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <!-- Lock Screen Overlay -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="icon">🔒</div>
+      <h2>Panel de Finanzas</h2>
+      <p>Ingresá tu PIN para acceder al registro de recaudación</p>
+      <input type="password" id="pin-input" class="pin-input" maxlength="10" placeholder="••••" autofocus onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="btn-login" onclick="doLogin()">Entrar</button>
+      <div id="login-error" class="login-error">PIN incorrecto. Intentá nuevamente.</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <h1>💰 Recaudación & Finanzas</h1>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <span>Monitoreo en Vivo</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openManualSaleModal()">➕ Cargar Venta Manual</button>
+      <button class="btn btn-outline" onclick="exportToCSV()">📥 Exportar a Excel</button>
+      <button class="btn btn-outline" onclick="openPinModal()">⚙️ Cambiar PIN</button>
+      <button class="btn btn-outline" onclick="fetchSalesData()">🔄 Actualizar</button>
+      <a href="/admin" class="btn btn-outline">Ir a Bot Admin 🤖</a>
+      <button class="btn btn-danger" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- KPI Summary Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--primary: #10b981;">
+        <div class="kpi-header">
+          <span class="kpi-title">Ingresos de Hoy</span>
+          <span class="kpi-icon">💵</span>
+        </div>
+        <div class="kpi-value" id="kpi-today">$0</div>
+        <div class="kpi-sub" id="kpi-today-count">0 ventas hoy</div>
+      </div>
+
+      <div class="kpi-card" style="--primary: #3b82f6;">
+        <div class="kpi-header">
+          <span class="kpi-title">Ingresos de Ayer</span>
+          <span class="kpi-icon">📅</span>
+        </div>
+        <div class="kpi-value" id="kpi-yesterday">$0</div>
+        <div class="kpi-sub" id="kpi-yesterday-count">0 ventas ayer</div>
+      </div>
+
+      <div class="kpi-card" style="--primary: #8b5cf6;">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Histórico</span>
+          <span class="kpi-icon">📈</span>
+        </div>
+        <div class="kpi-value" id="kpi-total">$0</div>
+        <div class="kpi-sub" id="kpi-total-count">0 transacciones registradas</div>
+      </div>
+
+      <div class="kpi-card" style="--primary: #f59e0b;">
+        <div class="kpi-header">
+          <span class="kpi-title">Ticket Promedio</span>
+          <span class="kpi-icon">🎯</span>
+        </div>
+        <div class="kpi-value" id="kpi-avg">$0</div>
+        <div class="kpi-sub">Promedio por operación</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Evolución de Ingresos ($ ARS)</h3>
+        <div class="chart-container">
+          <canvas id="timelineChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Distribución por Producto</h3>
+        <div class="chart-container">
+          <canvas id="productsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ranking & Rendimiento por Anuncio (Meta Ads) -->
+    <div class="table-card" style="margin-bottom: 25px;">
+      <div class="table-header" style="background:#f0fdf4; border-bottom: 1px solid #bbf7d0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h3 style="color:#166534; display:flex; align-items:center; gap:8px;">
+            <span>🎯 Rendimiento por Anuncio & Campaña (Meta Ads)</span>
+          </h3>
+          <p style="font-size:12px; color:#15803d; margin-top:2px;">Identificación automática de anuncios y origen a partir del primer mensaje y tags como [V1] o #PROMO.</p>
+        </div>
+        <span class="badge" style="background:#dcfce7; color:#166534; font-size:12px; padding:6px 12px; font-weight:700;">📊 Análisis de Anuncios</span>
+      </div>
+      <div id="adsSummaryContainer" style="padding: 20px;">
+        <div style="color:var(--text-muted); font-size:13px; text-align:center;">Cargando estadísticas de anuncios...</div>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="filter-card">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por teléfono, titular, N° de operación, tag o anuncio..." oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <select id="dateFilter" class="select-filter" onchange="applyFilters()">
+          <option value="all">Todas las fechas</option>
+          <option value="today">Solo Hoy</option>
+          <option value="yesterday">Solo Ayer</option>
+        </select>
+        <select id="productFilter" class="select-filter" onchange="applyFilters()">
+          <option value="all">Todos los productos</option>
+        </select>
+        <select id="adFilter" class="select-filter" onchange="applyFilters()">
+          <option value="all">Todos los anuncios / fuentes</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Sales Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Registro de Ingresos Detallado (<span id="table-count">0</span>)</h3>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Teléfono</th>
+              <th>Titular / Cliente</th>
+              <th>Monto</th>
+              <th>Origen / Anuncio</th>
+              <th>N° de Operación</th>
+              <th>Producto</th>
+              <th>Tipo Venta</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="salesTableBody">
+            <tr><td colspan="9" style="text-align:center; padding: 30px; color: var(--text-muted);">Cargando registros de ventas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Cambiar PIN -->
+  <div id="modal-pin" class="modal-overlay">
+    <div class="modal">
+      <h3 class="modal-title">⚙️ Cambiar Clave de Acceso</h3>
+      <div class="form-group">
+        <label class="form-label">PIN Actual:</label>
+        <input type="password" id="currentPinInput" class="form-input" placeholder="Ingresá tu PIN actual">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nuevo PIN:</label>
+        <input type="password" id="newPinInput" class="form-input" placeholder="Ingresá el nuevo PIN (ej: 4 dígitos)">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModals()">Cancelar</button>
+        <button class="btn btn-primary" onclick="submitChangePin()">Guardar Nuevo PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Venta Manual -->
+  <div id="modal-sale" class="modal-overlay">
+    <div class="modal">
+      <h3 class="modal-title">➕ Cargar Venta Manual</h3>
+      <div class="form-group">
+        <label class="form-label">Número de WhatsApp:</label>
+        <input type="text" id="manualPhone" class="form-input" placeholder="Ej: 54911xxxxxxxx">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre del Titular:</label>
+        <input type="text" id="manualClientName" class="form-input" placeholder="Ej: Carlos Sandoval">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monto ($ ARS):</label>
+        <input type="number" id="manualAmount" class="form-input" placeholder="4800">
+      </div>
+      <div class="form-group">
+        <label class="form-label">N° de Operación Bancaria:</label>
+        <input type="text" id="manualOp" class="form-input" placeholder="Ej: 182661956279">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Producto:</label>
+        <select id="manualProduct" class="form-input">
+          <option value="Cerrajería">Cerrajería ($4.800)</option>
+          <option value="Manual de Emergencia ($900)">Manual de Emergencia ($900)</option>
+          <option value="Oferta Especial ($2.800)">Oferta Especial ($2.800)</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModals()">Cancelar</button>
+        <button class="btn btn-primary" onclick="submitManualSale()">Registrar Venta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    let currentAuthPin = localStorage.getItem("finance_pin") || "";
+    let rawSales = [];
+    let filteredSales = [];
+    let timelineChartInstance = null;
+    let productsChartInstance = null;
+
+    // Inicialización
+    window.addEventListener("DOMContentLoaded", () => {
+      if (currentAuthPin) {
+        verifyPin(currentAuthPin);
+      } else {
+        document.getElementById("login-overlay").style.display = "flex";
+      }
+    });
+
+    async function verifyPin(pin) {
+      try {
+        const res = await fetch("/api/finanzas/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentAuthPin = pin;
+          localStorage.setItem("finance_pin", pin);
+          document.getElementById("login-overlay").style.display = "none";
+          fetchSalesData();
+        } else {
+          document.getElementById("login-overlay").style.display = "flex";
+          document.getElementById("login-error").style.display = "block";
+          localStorage.removeItem("finance_pin");
+        }
+      } catch (err) {
+        console.error("Error verificando PIN:", err);
+      }
+    }
+
+    function doLogin() {
+      const pin = document.getElementById("pin-input").value.trim();
+      if (!pin) return;
+      verifyPin(pin);
+    }
+
+    function logout() {
+      localStorage.removeItem("finance_pin");
+      currentAuthPin = "";
+      location.reload();
+    }
+
+    async function fetchSalesData() {
+      if (!currentAuthPin) return;
+      try {
+        const res = await fetch("/api/finanzas/data", {
+          headers: { "x-finance-pin": currentAuthPin }
+        });
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          rawSales = data.sales || [];
+          populateProductFilter(rawSales);
+          populateAdFilter(rawSales);
+          updateKPIs(data.summary);
+          applyFilters();
+          showToast("Datos actualizados correctamente ✅");
+        }
+      } catch (err) {
+        console.error("Error cargando finanzas:", err);
+        showToast("Error de conexión al servidor ❌");
+      }
+    }
+
+    function updateKPIs(summary) {
+      if (!summary) return;
+      document.getElementById("kpi-today").innerText = "$" + Number(summary.todayTotal || 0).toLocaleString("es-AR");
+      document.getElementById("kpi-today-count").innerText = (summary.todayCount || 0) + " ventas hoy";
+
+      document.getElementById("kpi-yesterday").innerText = "$" + Number(summary.yesterdayTotal || 0).toLocaleString("es-AR");
+      document.getElementById("kpi-yesterday-count").innerText = (summary.yesterdayCount || 0) + " ventas ayer";
+
+      document.getElementById("kpi-total").innerText = "$" + Number(summary.allTimeTotal || 0).toLocaleString("es-AR");
+      document.getElementById("kpi-total-count").innerText = (summary.allTimeCount || 0) + " transacciones totales";
+
+      document.getElementById("kpi-avg").innerText = "$" + Number(Math.round(summary.avgTicket || 0)).toLocaleString("es-AR");
+    }
+
+    function populateProductFilter(sales) {
+      const select = document.getElementById("productFilter");
+      const current = select.value;
+      const products = [...new Set(sales.map(s => s.productName).filter(Boolean))];
+      select.innerHTML = '<option value="all">Todos los productos</option>';
+      products.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.innerText = p;
+        select.appendChild(opt);
+      });
+      if (products.includes(current)) select.value = current;
+    }
+
+    function populateAdFilter(sales) {
+      const select = document.getElementById("adFilter");
+      if (!select) return;
+      const current = select.value;
+      const adSources = new Set();
+      sales.forEach(s => {
+        if (s.adTag) adSources.add(s.adTag);
+        else if (s.originMessage) {
+          const cleanOrigin = s.originMessage.trim();
+          const shortName = cleanOrigin.length > 35 ? cleanOrigin.substring(0, 32) + "..." : cleanOrigin;
+          adSources.add(shortName);
+        }
+      });
+      select.innerHTML = '<option value="all">Todos los anuncios / fuentes</option>';
+      adSources.forEach(ad => {
+        const opt = document.createElement("option");
+        opt.value = ad;
+        opt.innerText = "🏷️ " + ad;
+        select.appendChild(opt);
+      });
+      if ([...adSources].includes(current)) select.value = current;
+    }
+
+    function applyFilters() {
+      const q = document.getElementById("searchInput").value.toLowerCase().trim();
+      const dateF = document.getElementById("dateFilter").value;
+      const prodF = document.getElementById("productFilter").value;
+      const adF = document.getElementById("adFilter") ? document.getElementById("adFilter").value : "all";
+
+      const now = new Date();
+      const todayStr = now.toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
+      const yest = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const yestStr = yest.toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
+
+      filteredSales = rawSales.filter(s => {
+        if (dateF === "today" && s.date !== todayStr) return false;
+        if (dateF === "yesterday" && s.date !== yestStr) return false;
+        if (prodF !== "all" && s.productName !== prodF) return false;
+
+        if (adF !== "all") {
+          const sTag = (s.adTag || "").toLowerCase();
+          const sMsg = (s.originMessage || "").toLowerCase();
+          const targetAd = adF.toLowerCase().replace(/\.\.\.$/, "");
+          if (!sTag.includes(targetAd) && !sMsg.includes(targetAd)) return false;
+        }
+
+        if (q) {
+          const matchPhone = (s.phone || "").toLowerCase().includes(q);
+          const matchName = (s.clientName || "").toLowerCase().includes(q);
+          const matchOp = (s.operationId || "").toLowerCase().includes(q);
+          const matchProd = (s.productName || "").toLowerCase().includes(q);
+          const matchAd = (s.originMessage || "").toLowerCase().includes(q) || (s.adTag || "").toLowerCase().includes(q);
+          if (!matchPhone && !matchName && !matchOp && !matchProd && !matchAd) return false;
+        }
+        return true;
+      });
+
+      renderTable(filteredSales);
+      renderCharts(filteredSales);
+      renderAdsSummary(filteredSales);
+    }
+
+    function renderTable(sales) {
+      const tbody = document.getElementById("salesTableBody");
+      document.getElementById("table-count").innerText = sales.length;
+
+      if (sales.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 35px; color: var(--text-muted);">No se encontraron ventas para los filtros seleccionados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = sales.map(s => {
+        const cleanPhone = (s.phone || "").replace(/[^0-9]/g, "");
+        const waLink = cleanPhone ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="phone-link">📱 +${cleanPhone}</a>` : "N/A";
+        const isUpsell = (s.productName || "").includes("900") || (s.amount < 2000);
+        const prodBadge = isUpsell ? `<span class="badge badge-upsell">${s.productName}</span>` : `<span class="badge badge-product">${s.productName || "Cerrajería"}</span>`;
+
+        // Renderizado del origen / anuncio
+        let adHtml = '';
+        if (s.adTag) {
+          adHtml += `<span class="badge" style="background:#e0e7ff;color:#4338ca;font-weight:700;margin-right:6px;font-size:11px;">${s.adTag}</span>`;
+        }
+        const originText = s.originMessage ? s.originMessage : "Directo / Previo";
+        const truncatedOrigin = originText.length > 50 ? originText.substring(0, 47) + "..." : originText;
+        adHtml += `<span style="font-size:12px;color:#334155;" title="${originText}">"${truncatedOrigin}"</span>`;
+
+        // Tipo de venta (Directa vs Seguimiento)
+        const isDirect = s.saleType ? s.saleType.includes("Directa") : (s.leadTimeMinutes !== undefined ? s.leadTimeMinutes <= 25 : true);
+        const leadMin = s.leadTimeMinutes !== undefined ? s.leadTimeMinutes : null;
+        let saleTypeBadge = '';
+        if (isDirect) {
+          const timeLabel = leadMin !== null ? `${leadMin}m` : 'rápida';
+          saleTypeBadge = `<span class="badge" style="background:#dcfce7;color:#15803d;font-size:10px;">⚡ Directa (${timeLabel})</span>`;
+        } else {
+          const hours = leadMin !== null ? `${Math.round(leadMin/60)}h` : '';
+          saleTypeBadge = `<span class="badge" style="background:#fef3c7;color:#b45309;font-size:10px;">⏰ Seguimiento ${hours}</span>`;
+        }
+
+        return `
+          <tr>
+            <td><strong>${s.date}</strong> <span style="color:var(--text-muted);font-size:12px;">${s.time}</span></td>
+            <td>${waLink}</td>
+            <td>${s.clientName || "Cliente WhatsApp"}</td>
+            <td class="amount-cell">$${Number(s.amount).toLocaleString("es-AR")}</td>
+            <td style="max-width:280px;">${adHtml}</td>
+            <td>
+              <code>${s.operationId}</code>
+              <button class="btn-copy" title="Copiar número" onclick="copyText('${s.operationId}')">📋</button>
+            </td>
+            <td>${prodBadge}</td>
+            <td>${saleTypeBadge}</td>
+            <td>
+              <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="deleteSale('${s.id}')">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderAdsSummary(sales) {
+      const container = document.getElementById("adsSummaryContainer");
+      if (!container) return;
+
+      if (!sales || sales.length === 0) {
+        container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:20px;">No hay ventas registradas para los filtros actuales.</div>`;
+        return;
+      }
+
+      // Agrupar ventas por Anuncio / Tag
+      const adGroups = {};
+      let totalDirect = 0;
+      let totalFollowUp = 0;
+
+      sales.forEach(s => {
+        const tag = s.adTag || null;
+        let groupKey = tag;
+        if (!groupKey) {
+          const raw = (s.originMessage || "Sin anuncio / Directo").trim();
+          groupKey = raw.length > 40 ? raw.substring(0, 37) + "..." : raw;
+        }
+
+        if (!adGroups[groupKey]) {
+          adGroups[groupKey] = {
+            name: groupKey,
+            tag: tag,
+            fullSample: s.originMessage || groupKey,
+            count: 0,
+            totalRevenue: 0,
+            directCount: 0,
+            followUpCount: 0
+          };
+        }
+
+        const isDirect = s.saleType ? s.saleType.includes("Directa") : (s.leadTimeMinutes !== undefined ? s.leadTimeMinutes <= 25 : true);
+        adGroups[groupKey].count += 1;
+        adGroups[groupKey].totalRevenue += Number(s.amount || 0);
+        if (isDirect) {
+          adGroups[groupKey].directCount += 1;
+          totalDirect += 1;
+        } else {
+          adGroups[groupKey].followUpCount += 1;
+          totalFollowUp += 1;
+        }
+      });
+
+      const sortedAds = Object.values(adGroups).sort((a, b) => b.totalRevenue - a.totalRevenue);
+      const grandTotal = sales.reduce((acc, s) => acc + Number(s.amount || 0), 0) || 1;
+
+      let cardsHtml = `
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:15px; margin-bottom:15px;">
+      `;
+
+      sortedAds.forEach((ad, idx) => {
+        const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : `#${idx + 1}`));
+        const pctOfTotal = Math.round((ad.totalRevenue / grandTotal) * 100);
+        const directPct = Math.round((ad.directCount / (ad.count || 1)) * 100);
+        const followUpPct = 100 - directPct;
+        const avgTicket = Math.round(ad.totalRevenue / (ad.count || 1));
+
+        cardsHtml += `
+          <div style="background:white; border:1px solid #d1fae5; border-radius:12px; padding:16px; box-shadow:0 2px 4px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:18px; font-weight:800;">${medal}</span>
+                ${ad.tag ? `<span class="badge" style="background:#e0e7ff;color:#4338ca;font-weight:700;">${ad.tag}</span>` : `<span class="badge" style="background:#f1f5f9;color:#475569;">Anuncio / Origen</span>`}
+              </div>
+              <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:6px; line-height:1.3;" title="${ad.fullSample}">
+                "${ad.name}"
+              </div>
+            </div>
+            
+            <div style="margin-top:12px; border-top:1px dashed #e2e8f0; padding-top:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+                <span style="font-size:20px; font-weight:800; color:#059669;">$${ad.totalRevenue.toLocaleString("es-AR")}</span>
+                <span style="font-size:12px; font-weight:700; color:#047857;">${ad.count} ventas (${pctOfTotal}%)</span>
+              </div>
+              <div style="font-size:11px; color:#64748b; display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Ticket prom: $${avgTicket.toLocaleString("es-AR")}</span>
+                <span>⚡ ${directPct}% directas | ⏰ ${followUpPct}% seg.</span>
+              </div>
+              
+              <!-- Barra de conversión -->
+              <div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden; display:flex;">
+                <div style="width:${directPct}%; background:#10b981;" title="${directPct}% Ventas Directas"></div>
+                <div style="width:${followUpPct}%; background:#f59e0b;" title="${followUpPct}% Ventas por Seguimiento"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      cardsHtml += `</div>`;
+
+      // Barra de resumen general (Directas vs Seguimiento)
+      const directPctGlobal = Math.round((totalDirect / (sales.length || 1)) * 100);
+      const followUpPctGlobal = 100 - directPctGlobal;
+
+      cardsHtml += `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:15px; font-size:13px;">
+            <span>⚡ <strong>${totalDirect}</strong> Ventas Directas (${directPctGlobal}%)</span>
+            <span>⏰ <strong>${totalFollowUp}</strong> Ventas por Seguimiento (${followUpPctGlobal}%)</span>
+          </div>
+          <div style="font-size:12px; color:#0369a1; background:#e0f2fe; padding:4px 10px; border-radius:6px; font-weight:600;">
+            💡 Tip: Usa tags como [V1] o [PROMO] en tus anuncios de Meta para clasificarlos automáticamente
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = cardsHtml;
+    }
+
+    function renderCharts(sales) {
+      // 1. Gráfico de evolución por fecha
+      const dateMap = {};
+      sales.forEach(s => {
+        dateMap[s.date] = (dateMap[s.date] || 0) + s.amount;
+      });
+      const dates = Object.keys(dateMap);
+      const totals = Object.values(dateMap);
+
+      const ctxTimeline = document.getElementById("timelineChart").getContext("2d");
+      if (timelineChartInstance) timelineChartInstance.destroy();
+      timelineChartInstance = new Chart(ctxTimeline, {
+        type: "bar",
+        data: {
+          labels: dates,
+          datasets: [{
+            label: "Ingresos en ARS",
+            data: totals,
+            backgroundColor: "rgba(16, 185, 129, 0.7)",
+            borderColor: "rgb(16, 185, 129)",
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { callback: v => "$" + v.toLocaleString("es-AR") }
+            }
+          }
+        }
+      });
+
+      // 2. Gráfico de dona por producto
+      const prodMap = {};
+      sales.forEach(s => {
+        const p = s.productName || "Otros";
+        prodMap[p] = (prodMap[p] || 0) + s.amount;
+      });
+
+      const ctxProducts = document.getElementById("productsChart").getContext("2d");
+      if (productsChartInstance) productsChartInstance.destroy();
+      productsChartInstance = new Chart(ctxProducts, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(prodMap),
+          datasets: [{
+            data: Object.values(prodMap),
+            backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899"]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function exportToCSV() {
+      if (filteredSales.length === 0) {
+        showToast("No hay datos para exportar");
+        return;
+      }
+      const headers = ["Fecha", "Hora", "Telefono", "Titular", "Monto", "Origen_Anuncio", "Tag_Anuncio", "Tipo_Venta", "Minutos_Conversion", "Operacion", "Producto", "Estado"];
+      const rows = filteredSales.map(s => [
+        `"${s.date}"`,
+        `"${s.time}"`,
+        `"${s.phone}"`,
+        `"${s.clientName || ''}"`,
+        s.amount,
+        `"${(s.originMessage || 'Directo').replace(/"/g, '""')}"`,
+        `"${s.adTag || ''}"`,
+        `"${s.saleType || 'Directa'}"`,
+        s.leadTimeMinutes !== undefined ? s.leadTimeMinutes : 'N/A',
+        `"${s.operationId}"`,
+        `"${s.productName || ''}"`,
+        `"${s.status || 'Aprobado'}"`
+      ]);
+      const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ventas_ingresos_anuncios_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Archivo CSV con datos de anuncios descargado ✅");
+    }
+
+    function openPinModal() {
+      document.getElementById("currentPinInput").value = "";
+      document.getElementById("newPinInput").value = "";
+      document.getElementById("modal-pin").style.display = "flex";
+    }
+
+    function openManualSaleModal() {
+      document.getElementById("manualPhone").value = "";
+      document.getElementById("manualClientName").value = "";
+      document.getElementById("manualAmount").value = 4800;
+      document.getElementById("manualOp").value = "";
+      document.getElementById("modal-sale").style.display = "flex";
+    }
+
+    function closeModals() {
+      document.querySelectorAll(".modal-overlay").forEach(m => m.style.display = "none");
+    }
+
+    async function submitChangePin() {
+      const currentPin = document.getElementById("currentPinInput").value.trim();
+      const newPin = document.getElementById("newPinInput").value.trim();
+      if (!currentPin || !newPin) {
+        showToast("Completá ambos campos");
+        return;
+      }
+      try {
+        const res = await fetch("/api/finanzas/change-pin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-finance-pin": currentAuthPin },
+          body: JSON.stringify({ currentPin, newPin })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentAuthPin = newPin;
+          localStorage.setItem("finance_pin", newPin);
+          closeModals();
+          showToast("PIN actualizado con éxito ✅");
+        } else {
+          showToast(data.error || "Error al actualizar PIN ❌");
+        }
+      } catch (err) {
+        showToast("Error de conexión ❌");
+      }
+    }
+
+    async function submitManualSale() {
+      const phone = document.getElementById("manualPhone").value.trim();
+      const clientName = document.getElementById("manualClientName").value.trim();
+      const amount = Number(document.getElementById("manualAmount").value);
+      const operationId = document.getElementById("manualOp").value.trim();
+      const productName = document.getElementById("manualProduct").value;
+
+      if (!amount) {
+        showToast("Ingresá un monto válido");
+        return;
+      }
+      try {
+        const res = await fetch("/api/finanzas/add-sale", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-finance-pin": currentAuthPin },
+          body: JSON.stringify({ phone, clientName, amount, operationId, productName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModals();
+          fetchSalesData();
+          showToast("Venta manual registrada ✅");
+        } else {
+          showToast(data.error || "Error al guardar venta");
+        }
+      } catch (err) {
+        showToast("Error de conexión");
+      }
+    }
+
+    async function deleteSale(id) {
+      if (!confirm("¿Deseas eliminar este registro de venta?")) return;
+      try {
+        const res = await fetch("/api/finanzas/delete-sale", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-finance-pin": currentAuthPin },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchSalesData();
+          showToast("Registro eliminado");
+        }
+      } catch (err) {
+        showToast("Error al eliminar");
+      }
+    }
+
+    function copyText(txt) {
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast("Copiado al portapapeles 📋");
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.style.display = "block";
+      setTimeout(() => { t.style.display = "none"; }, 3000);
+    }
+  </script>
+</body>
+</html>
