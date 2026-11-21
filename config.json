@@ -1,5 +1,5 @@
 ﻿{
-  "geminiApiKey": "",
-  "geminiModel": "gemini-2.5-flash",
-  "financePin": "1234"
+    "geminiModel":  "gemini-3.5-flash-lite",
+    "financePin":  "1234",
+    "geminiApiKey":  ""
 }
