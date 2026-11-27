@@ -926,7 +926,7 @@
                           {
                               "type":  "text",
                               "delaySeconds":  3,
-                              "content":  "¡Excelente! Te detallo todo lo que te incluye el programa completo:\n📦 LO QUE VAS A APRENDER PASO A PASO:\n🔹 Fundamentos, herramientas y tipos de cerraduras.\n🔹 Diagnóstico y destrabe de puertas trabadas (la urgencia más pedida).\n🔹 Cambios de combinación y confección de llaves.\n🔹 Duplicados y uso correcto de máquina copiadora.\n🔹 Instalación y reemplazo de cerraduras y cerrojos de seguridad.\n🔹 Reparación y mantenimiento general.\n🎁 REGALOS EXCLUSIVOS (Solo inscribiéndote hoy):\n🔥 CURSO DE CERRAJERÍA AUTOMOTRIZ (Para aprender a trabajar con vehículos).\n📊 CALCULADORA DE PRECIOS: Para saber exactamente cuánto cobrar cada trabajo.\n📦 DIRECTORIO DE PROVEEDORES: Dónde comprar herramientas y repuestos a precio mayorista sin pagar de más.\n🚀 GUÍA PARA CONSEGUIR TUS PRIMEROS CLIENTES: El paso a paso para tener llamados en tu zona.\n🛠️ GUÍA DE HERRAMIENTAS: Para saber con qué maletín básico arrancar.\n⚠️ MANUAL DE ERRORES: Qué evitar al empezar para trabajar seguro.\n🎓 MODALIDAD:\n✔️ Clases en video grabadas + Materiales en PDF descargables.\n✔️ Evaluaciones prácticas + Certificado personalizado a tu nombre.\n✔️ Acceso de por vida (lo hacés a tu ritmo desde el celu o la compu)."
+                              "content":  "¡Excelente! Te detallo todo lo que te incluye el Mega Pack Completo de Plantillas: 🔥👇\n📦 LO QUE TE LLEVAS (Listas para imprimir y pegar):\n🔹 +500 Plantillas a medida exacta (diseñadas para encendedores tipo Bic grande, mini y Clipper).\n🔹 Colección Caricaturas y Anime: Los Simpsons, Dragon Ball, Rick \u0026 Morty, Pokémon y clásicos.\n🔹 Pasión y Cultura Argentina: Messi levantando la copa, Maradona, Dibu, Selección y escudos de fútbol.\n🔹 Rock Nacional y Urbano: Los Redondos, La Renga, Charly, Duki, Wos y las bandas más pedidas.\n🔹 Memes Virales y Frases Argentinas: Diseños de humor bizarro que se venden solos en ferias y previas.\n🔹 Planchas en A4 optimizadas: Para imprimir directo sin desperdiciar papel (entran hasta 20 por hoja).\n🎁 REGALOS EXCLUSIVOS (Solo comprando hoy):\n🎬 VIDEO TUTORIAL PASO A PASO: Cómo imprimir, cortar y pegar sin que te queden burbujas.\n🛡️ GUÍA DE LAMINADO CASERO: El truco para hacerlos resistentes al agua, al fuego y al roce del bolsillo.\n📦 GUÍA DE MATERIALES: Qué papel fotográfico adhesivo o vinilo comprar (y dónde) para gastar dos mangos.\n📊 CALCULADORA DE COSTOS Y PRECIOS: Para saber exactamente cuánto cobrar y sacarle más del 400% de ganancia.\n🚀 GUÍA PARA VENDERLOS: Cómo ofrecerlos por WhatsApp, Instagram o dejarlos en kioscos y ferias.\n⭐ PACK EXTRA DE STICKERS: Diseños adicionales para termos, tazas y botellas.\n📱 FORMATO Y ENTREGA:\n✔️ Archivos digitales en máxima calidad (PDF listos para imprimir + PNG en alta resolución).\n✔️ Acceso de por vida en Google Drive (descargás cuando quieras desde el celu o la compu).\n✔️ No necesitás máquinas caras: imprimís con cualquier impresora hogareña o en una fotocopiadora."
                           },
                           {
                               "type":  "text",
@@ -941,13 +941,7 @@
                           {
                               "type":  "text",
                               "delaySeconds":  3,
-                              "content":  "*Fijate esa nota de un colega en Buenos Aires: en una sola guardia de 24 horas facturó casi $500.000.*"
-                          },
-                          {
-                              "type":  "video",
-                              "delaySeconds":  10,
-                              "path":  "./uploads/1791325832277_noticia.mp4",
-                              "caption":  ""
+                              "content":  ""
                           },
                           {
                               "type":  "text",
@@ -1201,7 +1195,7 @@
                       ],
         "receiptCheck":  {
                              "enabled":  true,
-                             "expectedAmount":  4800,
+                             "expectedAmount":  4900,
                              "expectedHolder":  "MARISSA BALDERRAMA",
                              "expectedAlias":  "Ruta.Crecimiento, 3840200500000055285014",
                              "maxAgeHours":  6,
@@ -1289,7 +1283,429 @@
                      ],
         "receiptCheck":  {
                              "enabled":  true,
-                             "expectedAmount":  2800,
+                             "expectedAmount":  2900,
+                             "expectedHolder":  "MARISSA BALDERRAMA",
+                             "expectedAlias":  "Ruta.Crecimiento, 3840200500000055285014",
+                             "expectedCuil":  "27-25904495-8",
+                             "maxAgeHours":  6,
+                             "rejectMessage":  "X"
+                         },
+        "responses":  [
+                          {
+                              "type":  "text",
+                              "delaySeconds":  15,
+                              "content":  "Cerrajería 🔑🔑🔑\n\nhttps://drive.google.com/drive/folders/1ej7kD0VG6B2oZjwVbbyw5b_vCm16aPFX?usp=drive_link"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "🥳"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  40,
+                              "content":  "por ser alumno nuevo tenés habilitada esta OPORTUNIDAD ÚNICA:\n10 Técnicas de Apertura Rápida y Destrabe de Emergencia en la Calle»\nEs nuestro manual en PDF ilustrado para llevar en el celular. Contiene los 10 trucos de campo que usan los cerrajeros profesionales para abrir puertas en menos de 5 minutos sin romper nada 📖\n*🔥 SOLO POR  $900 pesos*\nMISMO ALIAS"
+                          }
+                      ],
+        "followUps":  [
+                          {
+                              "stepIndex":  0,
+                              "enabled":  false,
+                              "delayHours":  3,
+                              "delayMinutes":  0,
+                              "cancelRuleIds":  [
+
+                                                ],
+                              "responses":  [
+
+                                            ]
+                          }
+                      ],
+        "followUp":  {
+                         "stepIndex":  0,
+                         "enabled":  false,
+                         "delayHours":  3,
+                         "delayMinutes":  0,
+                         "cancelRuleIds":  [
+
+                                           ],
+                         "responses":  [
+
+                                       ]
+                     }
+    },
+    {
+        "id":  "rule_1795264448249_0",
+        "name":  "1. Información de Cerrajería",
+        "productId":  "prod_1795264448249",
+        "enabled":  true,
+        "patterns":  [
+                         "¡Hola! 👋 Me interesa aprender el oficio de cerrajería desde cero.🔑📲",
+                         "¡Hol@! 👋 Me interesa aprender el oficio de cerrajería desde cero.🔑📲"
+                     ],
+        "matchType":  "contains",
+        "responses":  [
+                          {
+                              "type":  "text",
+                              "delaySeconds":  3,
+                              "content":  "¡Excelente! Te detallo todo lo que te incluye el Mega Pack Completo de Plantillas: 🔥👇\n📦 LO QUE TE LLEVAS (Listas para imprimir y pegar):\n🔹 +500 Plantillas a medida exacta (diseñadas para encendedores tipo Bic grande, mini y Clipper).\n🔹 Colección Caricaturas y Anime: Los Simpsons, Dragon Ball, Rick \u0026 Morty, Pokémon y clásicos.\n🔹 Pasión y Cultura Argentina: Messi levantando la copa, Maradona, Dibu, Selección y escudos de fútbol.\n🔹 Rock Nacional y Urbano: Los Redondos, La Renga, Charly, Duki, Wos y las bandas más pedidas.\n🔹 Memes Virales y Frases Argentinas: Diseños de humor bizarro que se venden solos en ferias y previas.\n🔹 Planchas en A4 optimizadas: Para imprimir directo sin desperdiciar papel (entran hasta 20 por hoja).\n🎁 REGALOS EXCLUSIVOS (Solo comprando hoy):\n🎬 VIDEO TUTORIAL PASO A PASO: Cómo imprimir, cortar y pegar sin que te queden burbujas.\n🛡️ GUÍA DE LAMINADO CASERO: El truco para hacerlos resistentes al agua, al fuego y al roce del bolsillo.\n📦 GUÍA DE MATERIALES: Qué papel fotográfico adhesivo o vinilo comprar (y dónde) para gastar dos mangos.\n📊 CALCULADORA DE COSTOS Y PRECIOS: Para saber exactamente cuánto cobrar y sacarle más del 400% de ganancia.\n🚀 GUÍA PARA VENDERLOS: Cómo ofrecerlos por WhatsApp, Instagram o dejarlos en kioscos y ferias.\n⭐ PACK EXTRA DE STICKERS: Diseños adicionales para termos, tazas y botellas.\n📱 FORMATO Y ENTREGA:\n✔️ Archivos digitales en máxima calidad (PDF listos para imprimir + PNG en alta resolución).\n✔️ Acceso de por vida en Google Drive (descargás cuando quieras desde el celu o la compu).\n✔️ No necesitás máquinas caras: imprimís con cualquier impresora hogareña o en una fotocopiadora."
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  4,
+                              "content":  "❌ Precio habitual: $14.000 pesos\n🔥 PRECIO PROMOCIONAL: $4.800 pesos (Único pago)\n*(Menos de lo que cuesta una pizza, para que nadie se quede afuera)*"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  3,
+                              "content":  "El acceso al material y los regalos es INMEDIATO apenas confirmás el pago.​\nLos recibís  por WhatsApp.  \n​Escribi *QUIERO* y te paso los datos para que lo puedas adquirir😊  "
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  3,
+                              "content":  ""
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "🔥 PRECIO PROMOCIONAL: $4.800 pesos (Único pago)\n*(Menos de lo que cuesta una pizza, para que nadie se quede afuera)*"
+                          },
+                          {
+                              "type":  "audio",
+                              "delaySeconds":  2,
+                              "path":  "./uploads/1794852124518_Generated_Audio_October_11__20.ogg",
+                              "ptt":  true
+                          }
+                      ],
+        "followUp":  {
+                         "enabled":  true,
+                         "delayHours":  0,
+                         "delayMinutes":  45,
+                         "cancelRuleIds":  [
+                                               "rule_1795264448249_1",
+                                               "rule_1795264448249_2",
+                                               "rule_1795264448249_3",
+                                               "rule_1795264448249_4"
+                                           ],
+                         "responses":  [
+                                           {
+                                               "type":  "audio",
+                                               "delaySeconds":  2,
+                                               "path":  "./uploads/1794426029962_Generated_Audio_October_11__20.ogg",
+                                               "ptt":  true
+                                           }
+                                       ],
+                         "stepIndex":  0
+                     },
+        "followUps":  [
+                          {
+                              "enabled":  true,
+                              "delayHours":  0,
+                              "delayMinutes":  45,
+                              "cancelRuleIds":  [
+                                                    "rule_1795264448249_1",
+                                                    "rule_1795264448249_2",
+                                                    "rule_1795264448249_3",
+                                                    "rule_1795264448249_4"
+                                                ],
+                              "responses":  [
+                                                {
+                                                    "type":  "audio",
+                                                    "delaySeconds":  2,
+                                                    "path":  "./uploads/1794426029962_Generated_Audio_October_11__20.ogg",
+                                                    "ptt":  true
+                                                }
+                                            ],
+                              "stepIndex":  0
+                          },
+                          {
+                              "stepIndex":  1,
+                              "enabled":  true,
+                              "delayHours":  0,
+                              "delayMinutes":  46,
+                              "cancelRuleIds":  [
+                                                    "rule_1795264448249_1",
+                                                    "rule_1795264448249_2"
+                                                ],
+                              "responses":  [
+                                                {
+                                                    "type":  "text",
+                                                    "delaySeconds":  2,
+                                                    "content":  "*NOS QUEDAN LOS ULTIMOS CUPOS DE LA PROMOCION*"
+                                                }
+                                            ]
+                          },
+                          {
+                              "stepIndex":  2,
+                              "enabled":  true,
+                              "delayHours":  17,
+                              "delayMinutes":  0,
+                              "cancelRuleIds":  [
+                                                    "rule_1795264448249_1",
+                                                    "rule_1795264448249_2",
+                                                    "rule_1795264448249_3",
+                                                    "rule_1795264448249_4"
+                                                ],
+                              "responses":  [
+                                                {
+                                                    "type":  "text",
+                                                    "delaySeconds":  2,
+                                                    "content":  "¡Buenas! ¿Cómo estás? Soy del curso de cerrajería. 🔑\nMirá, hoy habilité unos últimos accesos a solo *$2.800* pesos exclusivamente para los que me escribieron ayer y no llegaron a anotarse. La promo es hasta hoy a las 11 de la noche y después se cierran los cupos.\n\nSi querés aprovecharlo por *$2.800*, respondeme con la palabra QUIERO y te paso el Alias para asegurarte el lugar. 🛠️📲"
+                                                }
+                                            ]
+                          }
+                      ],
+        "receiptCheck":  {
+                             "enabled":  false,
+                             "expectedAmount":  0,
+                             "expectedHolder":  "",
+                             "expectedAlias":  "",
+                             "maxAgeHours":  6,
+                             "rejectMessage":  "",
+                             "expectedCuil":  ""
+                         },
+        "onlyOnce":  false,
+        "requiredRuleId":  null,
+        "nextRuleId":  null,
+        "nextRuleDelaySeconds":  2
+    },
+    {
+        "id":  "rule_1795264448249_1",
+        "name":  "2. Comprar / Datos de Pago (Cerrajería)",
+        "productId":  "prod_1795264448249",
+        "enabled":  true,
+        "patterns":  [
+                         "comprar",
+                         "quiero comprar",
+                         "alias",
+                         "pago",
+                         "Quiero",
+                         "QUIERO",
+                         "KIERO"
+                     ],
+        "matchType":  "contains",
+        "responses":  [
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "*!EXCELENTE! Estás a solo un paso de aprovechar la promoción* 🥳"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  1,
+                              "content":  "A continuación el alias al cuál deberá realizar el pago:👇🏼\n*Alias* Ruta.Crecimiento\n\n\n*Titular* MARISSA BALDERRAMA \n\n*Envié la captura una vez realizado para poder realizarle el envio* .🤗"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "Ruta.Crecimiento"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "Recuerda que si realiza el pago en los próximos minutos se le brindará un *regalo extra* 🎁"
+                          }
+                      ],
+        "followUp":  {
+                         "enabled":  true,
+                         "delayHours":  0,
+                         "delayMinutes":  30,
+                         "cancelRuleIds":  [
+                                               "rule_1795264448249_2",
+                                               "rule_1795264448249_3",
+                                               "rule_1795264448249_4"
+                                           ],
+                         "responses":  [
+                                           {
+                                               "type":  "text",
+                                               "delaySeconds":  2,
+                                               "content":  "¡Hola!  ¿Pudiste realizar la transferencia? Recuerda que al enviar la captura por aquí te habilito el acceso inmediato al curso completo. ¡Cualquier duda avísame!"
+                                           }
+                                       ],
+                         "stepIndex":  0
+                     },
+        "followUps":  [
+                          {
+                              "enabled":  true,
+                              "delayHours":  0,
+                              "delayMinutes":  30,
+                              "cancelRuleIds":  [
+                                                    "rule_1795264448249_2",
+                                                    "rule_1795264448249_3",
+                                                    "rule_1795264448249_4"
+                                                ],
+                              "responses":  [
+                                                {
+                                                    "type":  "text",
+                                                    "delaySeconds":  2,
+                                                    "content":  "¡Hola!  ¿Pudiste realizar la transferencia? Recuerda que al enviar la captura por aquí te habilito el acceso inmediato al curso completo. ¡Cualquier duda avísame!"
+                                                }
+                                            ],
+                              "stepIndex":  0
+                          }
+                      ],
+        "receiptCheck":  {
+                             "enabled":  false,
+                             "expectedAmount":  0,
+                             "expectedHolder":  "",
+                             "expectedAlias":  "",
+                             "maxAgeHours":  6,
+                             "rejectMessage":  "",
+                             "expectedCuil":  ""
+                         },
+        "onlyOnce":  true,
+        "requiredRuleId":  null,
+        "nextRuleId":  null,
+        "nextRuleDelaySeconds":  2
+    },
+    {
+        "id":  "rule_1795264448249_2",
+        "name":  "3. Entrega de Enlaces (Cerrajería - $4.800)",
+        "productId":  "prod_1795264448249",
+        "enabled":  true,
+        "patterns":  [
+
+                     ],
+        "matchType":  "contains",
+        "responses":  [
+                          {
+                              "type":  "text",
+                              "delaySeconds":  30,
+                              "content":  "¡Muchísimas gracias por tu compra! 🎉🥳\nEn un momento se lo mandamos.\n"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "Cerrajería 🔑🔑🔑\n\nhttps://drive.google.com/drive/folders/1ej7kD0VG6B2oZjwVbbyw5b_vCm16aPFX?usp=drive_link"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  2,
+                              "content":  "https://drive.google.com/drive/folders/1DMghG-H4p1o-YsL6dNNg5b7MoZ9zgBZa?usp=drive_link"
+                          },
+                          {
+                              "type":  "text",
+                              "delaySeconds":  60,
+                              "content":  "por ser alumno nuevo tenés habilitada esta OPORTUNIDAD ÚNICA:\n10 Técnicas de Apertura Rápida y Destrabe de Emergencia en la Calle»\nEs nuestro manual en PDF ilustrado para llevar en el celular. Contiene los 10 trucos de campo que usan los cerrajeros profesionales para abrir puertas en menos de 5 minutos sin romper nada 📖\n*🔥 SOLO POR  $900 pesos*\nMISMO ALIAS"
+                          }
+                      ],
+        "followUp":  {
+                         "enabled":  false,
+                         "delayHours":  3,
+                         "delayMinutes":  0,
+                         "cancelRuleIds":  [
+
+                                           ],
+                         "responses":  [
+
+                                       ],
+                         "stepIndex":  0
+                     },
+        "followUps":  [
+                          {
+                              "enabled":  false,
+                              "delayHours":  3,
+                              "delayMinutes":  0,
+                              "cancelRuleIds":  [
+
+                                                ],
+                              "responses":  [
+
+                                            ],
+                              "stepIndex":  0
+                          }
+                      ],
+        "receiptCheck":  {
+                             "enabled":  true,
+                             "expectedAmount":  4900,
+                             "expectedHolder":  "MARISSA BALDERRAMA",
+                             "expectedAlias":  "Ruta.Crecimiento, 3840200500000055285014",
+                             "maxAgeHours":  6,
+                             "rejectMessage":  "X",
+                             "expectedCuil":  "27-25904495-8"
+                         },
+        "onlyOnce":  false,
+        "requiredRuleId":  null,
+        "nextRuleId":  null,
+        "nextRuleDelaySeconds":  2
+    },
+    {
+        "id":  "rule_1795264448249_3",
+        "name":  "4. Manual de Emergencia ($900)",
+        "productId":  "prod_1795264448249",
+        "enabled":  true,
+        "patterns":  [
+
+                     ],
+        "receiptCheck":  {
+                             "enabled":  true,
+                             "expectedAmount":  900,
+                             "expectedHolder":  "MARISSA BALDERRAMA",
+                             "expectedAlias":  "Ruta.Crecimiento, 3840200500000055285014",
+                             "maxAgeHours":  6,
+                             "rejectMessage":  "X",
+                             "expectedCuil":  "27-25904495-8"
+                         },
+        "responses":  [
+                          {
+                              "type":  "text",
+                              "delaySeconds":  5,
+                              "content":  "🥳"
+                          },
+                          {
+                              "type":  "document",
+                              "delaySeconds":  2,
+                              "path":  "./uploads/1791325847525_El__Secreto_del_Cerrajero.pdf",
+                              "fileName":  "El__Secreto_del_Cerrajero.pdf",
+                              "caption":  ""
+                          }
+                      ],
+        "followUps":  [
+                          {
+                              "stepIndex":  0,
+                              "enabled":  false,
+                              "delayHours":  3,
+                              "delayMinutes":  0,
+                              "cancelRuleIds":  [
+
+                                                ],
+                              "responses":  [
+
+                                            ]
+                          }
+                      ],
+        "followUp":  {
+                         "stepIndex":  0,
+                         "enabled":  false,
+                         "delayHours":  3,
+                         "delayMinutes":  0,
+                         "cancelRuleIds":  [
+
+                                           ],
+                         "responses":  [
+
+                                       ]
+                     },
+        "onlyOnce":  false,
+        "requiredRuleId":  null,
+        "nextRuleId":  null,
+        "nextRuleDelaySeconds":  2
+    },
+    {
+        "id":  "rule_1795264448249_4",
+        "name":  "Nueva Regla",
+        "productId":  "prod_1795264448249",
+        "enabled":  true,
+        "onlyOnce":  false,
+        "requiredRuleId":  null,
+        "nextRuleId":  null,
+        "nextRuleDelaySeconds":  2,
+        "patterns":  [
+
+                     ],
+        "receiptCheck":  {
+                             "enabled":  true,
+                             "expectedAmount":  2900,
                              "expectedHolder":  "MARISSA BALDERRAMA",
                              "expectedAlias":  "Ruta.Crecimiento, 3840200500000055285014",
                              "expectedCuil":  "27-25904495-8",

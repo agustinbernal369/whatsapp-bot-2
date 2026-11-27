@@ -249,6 +249,63 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Cola secuencial de protección de memoria RAM (procesa 1 tarea multimedia/IA a la vez)
+const memoryTaskQueue = [];
+let isProcessingMemoryQueue = false;
+let currentMemoryTaskLabel = null;
+let totalMemoryTasksProcessed = 0;
+
+function enqueueMemoryTask(label, taskFn) {
+  return new Promise((resolve, reject) => {
+    if (memoryTaskQueue.length >= 200) {
+      console.warn(`[COLA RAM] ⚠️ Cola con mucha demanda (${memoryTaskQueue.length} en espera): ${label}`);
+    }
+    memoryTaskQueue.push({ label, taskFn, resolve, reject, enqueuedAt: Date.now() });
+    if (isProcessingMemoryQueue) {
+      console.log(`[COLA RAM] ⏳ Encolado: "${label}" (Turno #${memoryTaskQueue.length} en fila | Activo: "${currentMemoryTaskLabel}")`);
+    }
+    processNextMemoryTask();
+  });
+}
+
+async function processNextMemoryTask() {
+  if (isProcessingMemoryQueue || memoryTaskQueue.length === 0) return;
+  isProcessingMemoryQueue = true;
+
+  while (memoryTaskQueue.length > 0) {
+    const item = memoryTaskQueue.shift();
+    currentMemoryTaskLabel = item.label;
+    const waitMs = Date.now() - item.enqueuedAt;
+    if (waitMs > 1000) {
+      console.log(`[COLA RAM] ▶️ Procesando "${item.label}" (esperó ${Math.round(waitMs / 1000)}s en fila, quedan ${memoryTaskQueue.length})`);
+    }
+
+    try {
+      const result = await Promise.race([
+        item.taskFn(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout de seguridad (4 min) en "${item.label}"`)), 240000)
+        )
+      ]);
+      item.resolve(result);
+    } catch (err) {
+      console.error(`[COLA RAM ERROR] Falló "${item.label}":`, err.message);
+      item.reject(err);
+    } finally {
+      totalMemoryTasksProcessed++;
+      currentMemoryTaskLabel = null;
+      if (typeof global.gc === "function") {
+        try {
+          global.gc();
+        } catch (e) {}
+      }
+      await sleep(250);
+    }
+  }
+
+  isProcessingMemoryQueue = false;
+}
+
 // Helper seguro para presencia (WhatsApp a menudo rechaza presence en LIDs o conexiones móviles)
 async function safePresence(sock, presence, jid) {
   try {
@@ -328,6 +385,9 @@ function convertToOpusOgg(inputPath) {
     if (ext === ".ogg" || ext === ".opus") return inputPath;
 
     const outputPath = inputPath.replace(/\.[^.]+$/, ".ogg");
+    if (fs.existsSync(outputPath)) {
+      return outputPath;
+    }
     const { execFileSync } = require("child_process");
     const ffmpegBin = getFfmpegPath();
     execFileSync(ffmpegBin, ["-y", "-i", inputPath, "-c:a", "libopus", "-b:a", "32k", "-vbr", "on", outputPath], {
@@ -1283,22 +1343,29 @@ async function executeRuleResponses(sock, remoteJid, ruleOrResponses, ruleName =
     const targetRule = rules.find((r) => r.id === nextId && r.enabled !== false);
     if (targetRule) {
       console.log(`[BOT] Regla encadenada programada: "${targetRule.name}" en ${delaySec}s para ${remoteJid}...`);
-      setTimeout(async () => {
-        try {
-          console.log(`[BOT] Disparando regla encadenada "${targetRule.name}" para ${remoteJid}...`);
-          if (!userState[remoteJid]) userState[remoteJid] = {};
-          if (!Array.isArray(userState[remoteJid].triggeredRules)) userState[remoteJid].triggeredRules = [];
-          if (!userState[remoteJid].triggeredRules.includes(targetRule.id)) {
-            userState[remoteJid].triggeredRules.push(targetRule.id);
-          }
-          userState[remoteJid].lastRuleId = targetRule.id;
-          saveUserState();
+      setTimeout(() => {
+        enqueueMemoryTask(`Regla encadenada "${targetRule.name}" -> ${remoteJid}`, async () => {
+          try {
+            const activeSock = currentSocket || sock;
+            if (!activeSock || !isConnected) {
+              console.warn(`[BOT] Omitiendo regla encadenada "${targetRule.name}" para ${remoteJid} (sin conexión activa).`);
+              return;
+            }
+            console.log(`[BOT] Disparando regla encadenada "${targetRule.name}" para ${remoteJid}...`);
+            if (!userState[remoteJid]) userState[remoteJid] = {};
+            if (!Array.isArray(userState[remoteJid].triggeredRules)) userState[remoteJid].triggeredRules = [];
+            if (!userState[remoteJid].triggeredRules.includes(targetRule.id)) {
+              userState[remoteJid].triggeredRules.push(targetRule.id);
+            }
+            userState[remoteJid].lastRuleId = targetRule.id;
+            saveUserState();
 
-          handleFollowUpTriggers(remoteJid, targetRule);
-          await executeRuleResponses(sock, remoteJid, targetRule, targetRule.name);
-        } catch (chainErr) {
-          console.error(`[BOT ERROR] Error ejecutando regla encadenada ${nextId}:`, chainErr.message);
-        }
+            handleFollowUpTriggers(remoteJid, targetRule);
+            await executeRuleResponses(activeSock, remoteJid, targetRule, targetRule.name);
+          } catch (chainErr) {
+            console.error(`[BOT ERROR] Error ejecutando regla encadenada ${nextId}:`, chainErr.message);
+          }
+        }).catch(() => {});
       }, delaySec * 1000);
     }
   }
@@ -1394,7 +1461,7 @@ function handleFollowUpTriggers(remoteJid, triggeredRule) {
 }
 
 // Bucle en segundo plano para verificar y despachar seguimientos cumplidos
-setInterval(async () => {
+setInterval(() => {
   if (!currentSocket || !isConnected) return;
   const now = Date.now();
   let changed = false;
@@ -1405,19 +1472,37 @@ setInterval(async () => {
       changed = true;
 
       const fuRule = rules.find((r) => r.id === fu.ruleId);
-      if (fuRule && fuRule.enabled !== false) {
-        const fuProd = products.find(p => p.id === (fuRule.productId || "grafismo"));
-        if (fuProd && fuProd.enabled === false) {
-          console.log(`[BOT REMARKETING] Omitiendo seguimiento para ${fu.remoteJid} porque el producto "${fuProd.name}" está apagado.`);
-          continue;
-        }
+      if (!fuRule || fuRule.enabled === false) continue;
 
-        console.log(`[BOT REMARKETING] ⏰ ¡Tiempo cumplido! Enviando seguimiento a ${fu.remoteJid} (Regla: "${fuRule.name}")`);
+      const fuProd = products.find(p => p.id === (fuRule.productId || "grafismo"));
+      if (fuProd && fuProd.enabled === false) {
+        console.log(`[BOT REMARKETING] Omitiendo seguimiento para ${fu.remoteJid} porque el producto "${fuProd.name}" está apagado.`);
+        continue;
+      }
+
+      enqueueMemoryTask(`Seguimiento "${fuRule.name}" -> ${fu.remoteJid}`, async () => {
+        if (!currentSocket || !isConnected) {
+          console.warn(`[BOT REMARKETING] Omitiendo seguimiento para ${fu.remoteJid} (sin conexión activa).`);
+          return;
+        }
 
         const stepIdx = fu.stepIndex !== undefined ? fu.stepIndex : 0;
         const steps = Array.isArray(fuRule.followUps) && fuRule.followUps.length > 0
           ? fuRule.followUps
           : (fuRule.followUp ? [fuRule.followUp] : []);
+
+        // Verificar si el cliente activó alguna regla de cancelación mientras esperaba en fila
+        const triggered = userState[fu.remoteJid]?.triggeredRules || [];
+        let cancelIds = Array.isArray(fu.cancelRuleIds) ? [...fu.cancelRuleIds] : [];
+        if (steps[stepIdx] && Array.isArray(steps[stepIdx].cancelRuleIds)) {
+          cancelIds = cancelIds.concat(steps[stepIdx].cancelRuleIds);
+        }
+        if (cancelIds.some((cId) => triggered.includes(cId))) {
+          console.log(`[BOT REMARKETING] Seguimiento cancelado en cola para ${fu.remoteJid} (ya activó regla de cancelación).`);
+          return;
+        }
+
+        console.log(`[BOT REMARKETING] ⏰ ¡Tiempo cumplido! Enviando seguimiento a ${fu.remoteJid} (Regla: "${fuRule.name}")`);
 
         if (fu.isIntegrated && steps[stepIdx] && Array.isArray(steps[stepIdx].responses) && steps[stepIdx].responses.length > 0) {
           await executeRuleResponses(currentSocket, fu.remoteJid, steps[stepIdx].responses, `${fuRule.name} (Seguimiento #${stepIdx + 1})`);
@@ -1438,7 +1523,7 @@ setInterval(async () => {
             const delayMs = totalMinutes * 60 * 1000;
             const nextKey = `${fu.remoteJid}_${fuRule.id}_${nextStepIdx}`;
 
-            let cancelRuleIds = Array.isArray(nextStep.cancelRuleIds) && nextStep.cancelRuleIds.length > 0
+            let nextCancelRuleIds = Array.isArray(nextStep.cancelRuleIds) && nextStep.cancelRuleIds.length > 0
               ? nextStep.cancelRuleIds
               : (steps[0].cancelRuleIds || []);
 
@@ -1448,14 +1533,15 @@ setInterval(async () => {
               stepIndex: nextStepIdx,
               productId: fuRule.productId,
               scheduledTime: Date.now() + delayMs,
-              cancelRuleIds: cancelRuleIds,
+              cancelRuleIds: nextCancelRuleIds,
               isIntegrated: true,
               status: "pending"
             };
+            saveFollowUps();
             console.log(`[BOT REMARKETING] 🔴 Seguimiento #${nextStepIdx + 1} programado para ${fu.remoteJid} en ${hours}h ${minutes}m (${totalMinutes} min totales) (Regla: "${fuRule.name}")`);
           }
         }
-      }
+      }).catch(() => {});
     }
   }
 
@@ -1669,6 +1755,12 @@ const server = http.createServer(async (req, res) => {
         heapTotalMb: (mem.heapTotal / (1024 * 1024)).toFixed(1) + " MB",
         gcAvailable: typeof global.gc === "function"
       },
+      queue: {
+        pending: memoryTaskQueue.length,
+        isProcessing: isProcessingMemoryQueue,
+        currentTask: currentMemoryTaskLabel,
+        totalProcessed: totalMemoryTasksProcessed
+      },
       recentIncoming,
       recentLogs: recentLogs.slice(-50),
       userState,
@@ -1832,7 +1924,10 @@ const server = http.createServer(async (req, res) => {
           (async () => {
             for (let i = 0; i < targetNumbers.length; i++) {
               try {
-                await processSingleNumber(targetNumbers[i]);
+                await enqueueMemoryTask(
+                  `Despacho lote [${i + 1}/${targetNumbers.length}] -> ${targetNumbers[i]}`,
+                  () => processSingleNumber(targetNumbers[i])
+                );
                 console.log(`[DISPATCH MANUAL] Contacto [${i + 1}/${targetNumbers.length}] completado.`);
                 if (i < targetNumbers.length - 1) {
                   const pauseBetweenContacts = 7000 + Math.floor(Math.random() * 5000); // 7-12s
@@ -1846,7 +1941,7 @@ const server = http.createServer(async (req, res) => {
             console.log(`[DISPATCH MANUAL] ✅ Despacho por lotes completado para los ${targetNumbers.length} contactos.`);
           })();
         } else {
-          await processSingleNumber(targetNumbers[0]);
+          await enqueueMemoryTask(`Despacho manual -> ${targetNumbers[0]}`, () => processSingleNumber(targetNumbers[0]));
           res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
           return res.end(JSON.stringify({ success: true, message: `Regla enviada con éxito a ${targetNumbers[0]}` }));
         }
@@ -4493,11 +4588,17 @@ async function startBot() {
           continue;
         }
 
-        const { text: rawText, hasImage, hasAudio, audioMime, mediaMime } = extractMessage(msg);
-        const norm = normalizeText(rawText);
-        const cleanIncoming = cleanForMatch(rawText);
+        const runQueuedMessage = async (sock) => {
+          if (!sock || !isConnected) {
+            console.warn(`[COLA RAM] Omitiendo mensaje de ${remoteJid} porque no hay conexión activa.`);
+            return;
+          }
 
-        console.log(`[MENSAJE] De: ${remoteJid}${remoteJidAlt ? ` (Alt: ${remoteJidAlt})` : ""} | Texto: "${rawText}" | ¿Foto?: ${hasImage} | ¿Audio?: ${hasAudio}`);
+          const { text: rawText, hasImage, hasAudio, audioMime, mediaMime } = extractMessage(msg);
+          const norm = normalizeText(rawText);
+          const cleanIncoming = cleanForMatch(rawText);
+
+          console.log(`[MENSAJE] De: ${remoteJid}${remoteJidAlt ? ` (Alt: ${remoteJidAlt})` : ""} | Texto: "${rawText}" | ¿Foto?: ${hasImage} | ¿Audio?: ${hasAudio}`);
 
         // 1. Identificación de contexto del cliente
         if (!userState[remoteJid]) userState[remoteJid] = {};
@@ -4638,7 +4739,7 @@ async function startBot() {
           const clientProdObj = products.find(p => p.id === currentProd);
           if (clientProdObj && clientProdObj.enabled === false) {
             console.log(`[BOT] Producto "${currentProd}" apagado por switch maestro. Ignorando comprobante de ${remoteJid}.`);
-            continue;
+            return;
           }
           console.log(`[BOT] Foto o captura recibida de ${remoteJid}. Verificando flujo para producto: "${currentProd}"...`);
 
@@ -4665,11 +4766,12 @@ async function startBot() {
               matchedRule = fallbackRule;
             } else {
               console.log(`[BOT RECEIPT] Descargando imagen para análisis con Gemini Vision (${apiKeys.length} claves disponibles)...`);
-              const imageBuffer = await getMediaBuffer(msg, sock);
+              let imageBuffer = await getMediaBuffer(msg, sock);
               if (imageBuffer) {
                 try {
                   console.log(`[BOT RECEIPT] Consultando a Google Gemini Vision (${imageBuffer.length} bytes, MIME: ${mediaMime || "image/jpeg"})...`);
                   const geminiResult = await queryGeminiVision(imageBuffer, mediaMime || "image/jpeg");
+                  imageBuffer = null;
                   console.log(`[BOT RECEIPT] Datos extraídos por Gemini:`, JSON.stringify(geminiResult));
 
                   // Reglas pendientes que aún no completó este cliente
@@ -4766,7 +4868,7 @@ async function startBot() {
                     userState[remoteJid].chatHistory.push({ role: "user", text: "[Envío de comprobante de pago]" });
                     userState[remoteJid].chatHistory.push({ role: "model", text: validation.userMessage });
                     saveUserState();
-                    continue; // Detener flujo para no entregar el producto
+                    return; // Detener flujo para no entregar el producto
                   }
                 } catch (geminiErr) {
                   console.error(`[BOT RECEIPT ERROR]:`, geminiErr.message);
@@ -4871,7 +4973,7 @@ async function startBot() {
           // Si el cliente ya tenía un producto asignado, pero ese producto está apagado, no responder
           if (prodObj && prodObj.enabled === false) {
             console.log(`[BOT AI] El producto "${prodObj.name}" de ${remoteJid} está apagado por switch maestro. No se responde.`);
-            continue;
+            return;
           }
 
           // Si el mensaje menciona explícitamente palabras clave de otro producto ACTIVO, asociar a ese producto
@@ -4898,7 +5000,7 @@ async function startBot() {
           // Si el producto seleccionado está apagado o no tiene IA activa, no responder
           if (!prodObj || prodObj.enabled === false || !prodObj.aiEnabled) {
             console.log(`[BOT AI] Sin producto con IA activa disponible para responder a ${remoteJid}.`);
-            continue;
+            return;
           }
 
           if (prodObj && prodObj.enabled !== false && prodObj.aiEnabled) {
@@ -4986,6 +5088,7 @@ REGLAS ESTRICTAS DE ATENCIÓN Y VENTAS:
                   audioMime,
                   userState[remoteJid].chatHistory
                 );
+                audioBuffer = null;
 
                 if (aiResponse) {
                   console.log(`[BOT AI] Respuesta generada para ${remoteJid}: "${aiResponse.slice(0, 100)}..."`);
@@ -5025,6 +5128,9 @@ REGLAS ESTRICTAS DE ATENCIÓN Y VENTAS:
             }
           }
         }
+        };
+
+        enqueueMemoryTask(`Mensaje de ${remoteJid}`, () => runQueuedMessage(currentSocket || sock)).catch(() => {});
       }
     } catch (err) {
       console.error("[BOT ERROR]:", err);
